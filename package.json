@@ -1,0 +1,35 @@
+{
+  "name": "express-mesto",
+  "version": "1.0.0",
+  "description": "`/public` — статика, полученная в результате билда фронтенд-приложения на Реакте  \r `/data` — JSON-файлы для временной эмуляции работы с базой данных  \r `/routes` — папка с файлами роутера",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "lint": "eslint app.js",
+    "lint:fix": "eslint app.js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wrongsky1/express-mesto.git"
+  },
+  "keywords": [],
+  "author": "Misha Razlivakhin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wrongsky1/express-mesto/issues"
+  },
+  "homepage": "https://github.com/wrongsky1/express-mesto#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.6",
+    "validator": "^13.1.17"
+  },
+  "devDependencies": {
+    "eslint": "^7.8.1",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "nodemon": "^2.0.4"
+  }
+}
