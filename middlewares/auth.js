@@ -3,7 +3,6 @@ const AuthError = require('../errors/AuthError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-// при успешной авторизации записываем токен
 module.exports = (req, res, next) => {
   const token = req.cookies.jwt;
   let payload;

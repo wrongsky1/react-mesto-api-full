@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
       validator(v) {
         return /^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/.test(v);
       },
-      message: 'Данная ссылка некорректна, введите верную ссылку...',
+      message: 'Данная ссылка некорректна, введите верную ссылку.',
     },
     required: [true, 'Введите ссылку для аватара'],
   },
@@ -45,17 +45,16 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// проверяем email и password на налчие в бд
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new AuthError({ message: 'Wrong Email or Password' });
+        throw new AuthError({ message: 'Неверный email или пароль' });
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new AuthError({ message: 'Wrong Email or Password' });
+            throw new AuthError({ message: 'Неверный email или пароль' });
           }
           return user;
         });
