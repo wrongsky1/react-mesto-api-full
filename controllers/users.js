@@ -19,7 +19,7 @@ const getUserById = (req, res, next) => {
       if (user === null) {
         throw new NotFoundError({ message: 'Пользователя не существует' });
       }
-      res.status(200).send({ data: user });
+      res.status(200).send(user);
     })
     .catch(next);
 };
