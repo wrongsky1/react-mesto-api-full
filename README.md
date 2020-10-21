@@ -3,11 +3,10 @@
 ### Информация:
 Репозиторий для полноценного API проекта Mesto, включающий авторизацию и регистрацию пользователей, операции с карточками и пользователями. 
 * Доменное имя front-end https://rmd.students.nomoreparties.co
-* Доменное имя back-end https://api.rmd.students.nomoreparties.co
+* Доменное имя back-end https://api.razmd.students.nomoreparties.co
 * IP сервера: 130.193.50.9
 
 ## Директории
-
 `/controllers` — контроллеры для обработки маршрутов  
 `/errors` - модели ошибок
 `/middlewares` - папка для контроля приложения
