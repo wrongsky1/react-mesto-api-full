@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const { celebrate, Joi, errors } = require('celebrate');
 const requestLimit = require('express-rate-limit');
 const usersRouters = require('./routes/users.js');
@@ -31,6 +32,7 @@ const limit = requestLimit({
   max: 100,
 });
 
+app.use(cors());
 app.use(limit);
 app.use(requestLogger);
 app.use(errorLogger);
@@ -49,14 +51,14 @@ app.get('/crash-test', () => {
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
-    password: Joi.string().required().min(10),
+    password: Joi.string().required().min(10).pattern(/^\S+$/),
   }),
 }), login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
-    password: Joi.string().required().min(10),
+    password: Joi.string().required().min(10).pattern(/^\S+$/),
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
     avatar: Joi.string().required().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
