@@ -8,7 +8,7 @@ const { celebrate, Joi, errors } = require('celebrate');
 const requestLimit = require('express-rate-limit');
 const usersRouters = require('./routes/users.js');
 const cardsRouters = require('./routes/cards.js');
-const error = require('./routes/error.js');
+// const error = require('./routes/error.js');
 const { requestLogger, errorLogger } = require('./middlewares/logger.js');
 const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth.js');
@@ -37,17 +37,6 @@ app.use(cors());
 app.use(limit);
 app.use(requestLogger);
 app.use(errorLogger);
-app.use(auth);
-app.use('/', usersRouters);
-app.use('/', cardsRouters);
-app.use('*', error);
-app.use(errors());
-
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -65,6 +54,18 @@ app.post('/signup', celebrate({
     avatar: Joi.string().required().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/),
   }).unknown(true),
 }), createUser);
+
+app.use(auth);
+app.use('/', usersRouters);
+app.use('/', cardsRouters);
+// app.use('*', error);
+app.use(errors());
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.use((err, req, res, next) => {
   if (err.status) {
