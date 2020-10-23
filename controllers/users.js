@@ -9,18 +9,17 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.status(200).send({ data: users }))
     .catch(next);
 };
 
 const getUserById = (req, res, next) => {
-  User.findById(req.params.userId === 'me' ? req.user : req.params.userId)
-    .then((user) => {
-      if (user === null) {
-        throw new NotFoundError({ message: 'Пользователя не существует' });
-      }
-      res.status(200).send(user);
+  User.findById(req.params._id === 'me' ? req.user : req.params._id)
+    .orFail()
+    .catch(() => {
+      throw new NotFoundError({ message: 'Пользователя не существует' });
     })
+    .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
 
@@ -28,6 +27,7 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name: name || 'User',
@@ -41,7 +41,11 @@ const createUser = (req, res, next) => {
         throw new ConflictError({ message: 'Пользователь с таким email уже существует, введите другой email' });
       } else next(err);
     })
-    .then((user) => res.status(201).send({ message: `Пользователь с ${user.email} зарегистрирован` }))
+    .then((user) => res.status(201).send({
+      data: {
+        name: user.name, about: user.about, avatar, email: user.email,
+      },
+    }))
     .catch(next);
 };
 
@@ -51,13 +55,13 @@ const changeUser = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail()
-    .then((user) => res.status(200).send(user))
+    .orFail(() => new NotFoundError({ message: 'Нет пользователя с таким id' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError({ message: 'Переданы некорректные данные' });
       } else next(err);
     })
+    .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
 
@@ -67,21 +71,18 @@ const changeUserAvatar = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail()
-    .then((user) => res.status(200).send(user))
+    .orFail(() => new NotFoundError({ message: 'Нет пользователя с таким id' }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError({ message: 'Переданы некорректные данные' });
       } else next(err);
     })
+    .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
 
 const login = (req, res, next) => {
-  const {
-    email,
-    password,
-  } = req.body;
+  const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
     .then((user) => {

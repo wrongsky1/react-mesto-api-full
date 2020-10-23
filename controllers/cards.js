@@ -5,17 +5,18 @@ const NotFoundError = require('../errors/NotFoundError');
 
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.status(200).send(cards))
+    .then((cards) => res.status(200).send({ data: cards }))
     .catch(next);
 };
 
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id })
+
+  Card.create({ name, link, owner: req.use._id })
     .catch((err) => {
       throw new BadRequestError({ message: `Переданы не корректные данные: ${err.message}` });
     })
-    .then((card) => res.status(201).send(card))
+    .then((card) => res.status(201).send({ data: card }))
     .catch(next);
 };
 
@@ -47,7 +48,7 @@ const likeCard = (req, res, next) => {
       throw new NotFoundError({ message: 'Карточки не существует' });
     })
     .then((likes) => {
-      res.status(200).send(likes);
+      res.status(200).send({ data: likes });
     })
     .catch(next);
 };
@@ -63,7 +64,7 @@ const deleteLikeCard = (req, res, next) => {
       throw new NotFoundError({ message: 'Карточки не существует' });
     })
     .then((likes) => {
-      res.status(200).send(likes);
+      res.status(200).send({ data: likes });
     })
     .catch(next);
 };
