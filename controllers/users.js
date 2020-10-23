@@ -14,7 +14,7 @@ const getUsers = (req, res, next) => {
 };
 
 const getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
+  User.findById(req.params.userId === 'me' ? req.user : req.params.userId)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError({ message: 'Пользователя не существует' });
@@ -30,9 +30,9 @@ const createUser = (req, res, next) => {
   } = req.body;
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      name,
-      about,
-      avatar,
+      name: name || 'User',
+      about: about || 'About User',
+      avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
       email,
       password: hash,
     }))
