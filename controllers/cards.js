@@ -11,21 +11,16 @@ const getCards = (req, res, next) => {
 
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
-
-  Card.create({ name, link, owner: req.use._id })
-    .catch((err) => {
-      throw new BadRequestError({ message: `Переданы не корректные данные: ${err.message}` });
-    })
+  const { _id: userId } = req.user;
+  Card.create({ name, link, owner: userId })
     .then((card) => res.status(201).send({ data: card }))
-    .catch(next);
+    .catch(() => next(new BadRequestError()));
 };
 
 const deleteCard = (req, res, next) => {
-  Card.findById(req.params.cardId)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: 'Карточки не существует' });
-    })
+  const { cardId } = req.params;
+  Card.findById(cardId)
+    .orFail(new NotFoundError('Карточки не существует'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError({ message: 'Удалять можно только свои карточки' });
@@ -43,10 +38,7 @@ const likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: 'Карточки не существует' });
-    })
+    .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
       res.status(200).send({ data: likes });
     })
@@ -59,10 +51,7 @@ const deleteLikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: 'Карточки не существует' });
-    })
+    .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
       res.status(200).send({ data: likes });
     })

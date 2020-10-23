@@ -4,7 +4,13 @@ const AuthError = require('../errors/AuthError');
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports = (req, res, next) => {
-  const token = req.cookies.jwt;
+  const { authorization = '' } = req.headers;
+
+  if (!authorization && !authorization.startsWith('Bearer ')) {
+    return next(new AuthError());
+  }
+
+  const token = authorization.replace('Bearer ', '');
   let payload;
   try {
     payload = jwt.verify(
@@ -16,5 +22,5 @@ module.exports = (req, res, next) => {
   }
 
   req.user = payload;
-  next();
+  return next();
 };

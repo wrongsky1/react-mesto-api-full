@@ -1,6 +1,6 @@
 /* eslint-disable func-names */
 const mongoose = require('mongoose');
-const validator = require('validator');
+const { isEmail, isURL } = require('validator');
 const bcrypt = require('bcryptjs');
 const AuthError = require('../errors/AuthError');
 
@@ -9,19 +9,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 2,
     maxlength: 30,
+    default: 'User',
     required: [true, 'имя пользователя, строка от 2 до 30 символов'],
   },
   about: {
     type: String,
     minlength: 2,
     maxlength: 30,
+    default: 'About',
     required: [true, 'информация о пользователе, строка от 2 до 30 символов'],
   },
   avatar: {
     type: String,
+    default: 'https://icon-library.com/images/141782.svg.svg',
     validate: {
-      validator(v) {
-        return /^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/.test(v);
+      validator(value) {
+        return isURL(value);
       },
       message: 'Данная ссылка некорректна, введите верную ссылку.',
     },
@@ -32,8 +35,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
     validate: {
-      validator(email) {
-        return validator.isEmail(email);
+      validator(value) {
+        return isEmail(value);
       },
       message: 'Вы ввели некорректный email',
     },
@@ -41,7 +44,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 10,
     select: false,
   },
 });

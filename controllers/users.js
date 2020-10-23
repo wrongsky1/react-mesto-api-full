@@ -4,6 +4,9 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
 const NotFoundError = require('../errors/NotFoundError');
+const AuthError = require('../errors/AuthError');
+
+// const { TOKEN_SECRET_KEY = 'token-secret-key' } = process.env;
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -15,10 +18,7 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params._id === 'me' ? req.user : req.params._id)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: 'Пользователя не существует' });
-    })
+    .orFail(new NotFoundError({ message: 'Пользователя не существует' }))
     .then((user) => res.status(200).send({ data: user }))
     .catch(next);
 };
@@ -30,9 +30,9 @@ const createUser = (req, res, next) => {
 
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      name: name || 'User',
-      about: about || 'About User',
-      avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
+      name,
+      about,
+      avatar,
       email,
       password: hash,
     }))
@@ -55,7 +55,7 @@ const changeUser = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail(() => new NotFoundError({ message: 'Нет пользователя с таким id' }))
+    .orFail(new NotFoundError())
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError({ message: 'Переданы некорректные данные' });
@@ -71,7 +71,7 @@ const changeUserAvatar = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail(() => new NotFoundError({ message: 'Нет пользователя с таким id' }))
+    .orFail(new NotFoundError())
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError({ message: 'Переданы некорректные данные' });
@@ -83,7 +83,6 @@ const changeUserAvatar = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
@@ -91,14 +90,9 @@ const login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-        sameSite: true,
-      })
-        .send({ message: 'Авторизация прошла успешно' });
+      res.send({ token });
     })
-    .catch(next);
+    .catch(() => next(new AuthError('Неверный email или пароль')));
 };
 
 module.exports = {

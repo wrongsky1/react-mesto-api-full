@@ -12,7 +12,7 @@ router.get('/users', getUsers);
 
 router.get('/users/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().length(24).hex(),
+    userId: Joi.string().hex().length(24),
   }),
 }), getUserById);
 
@@ -20,13 +20,13 @@ router.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
-  }).unknown(true),
+  }),
 }), changeUser);
 
 router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().required().pattern(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/),
-  }).unknown(true),
+  }),
 }), changeUserAvatar);
 
 module.exports = router;
