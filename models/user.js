@@ -9,13 +9,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: [true, 'имя пользователя, строка от 2 до 30 символов'],
+    required: true,
   },
   about: {
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: [true, 'информация о пользователе, строка от 2 до 30 символов'],
+    required: true,
   },
   avatar: {
     type: String,
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Данная ссылка некорректна, введите верную ссылку.',
     },
-    required: [true, 'Введите ссылку для аватара'],
+    required: true,
   },
   email: {
     type: String,

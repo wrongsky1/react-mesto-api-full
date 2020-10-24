@@ -4,7 +4,6 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
 const NotFoundError = require('../errors/NotFoundError');
-const AuthError = require('../errors/AuthError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -40,13 +39,16 @@ const createUser = (req, res, next) => {
       password: hash,
     }))
     .catch((err) => {
-      if (err.name === 'MongoError' || err.code === 11000) {
-        throw new ConflictError({ message: 'Пользователь с таким email уже существует, введите другой email' });
-      } else next(err);
+      if (err.name === 'BadRequestError') {
+        throw new BadRequestError('Заполните все поля: name, about, avatar, email, password');
+      } else if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
+      }
     })
     .then((user) => {
       res.status(200).send((user));
     })
+
     .catch(next);
 };
 
@@ -56,14 +58,15 @@ const changeUser = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail(new NotFoundError())
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError({ message: 'Переданы некорректные данные' });
-      } else next(err);
+    .then((user) => {
+      res.status(200).send((user));
     })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'BadRequestError') {
+        throw new BadRequestError('Ошибка валидации');
+      }
+      next(err);
+    });
 };
 
 const changeUserAvatar = (req, res, next) => {
@@ -72,14 +75,15 @@ const changeUserAvatar = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    .orFail(new NotFoundError())
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError({ message: 'Переданы некорректные данные' });
-      } else next(err);
+    .then((user) => {
+      res.status(200).send((user));
     })
-    .then((user) => res.status(200).send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'BadRequestError') {
+        throw new BadRequestError('Ошибка валидации');
+      }
+      next(err);
+    });
 };
 
 const login = (req, res, next) => {
@@ -93,7 +97,7 @@ const login = (req, res, next) => {
       );
       res.send({ token });
     })
-    .catch(() => next(new AuthError('Неверный email или пароль')));
+    .catch(next);
 };
 
 module.exports = {

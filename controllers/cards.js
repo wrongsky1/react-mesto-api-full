@@ -5,7 +5,7 @@ const NotFoundError = require('../errors/NotFoundError');
 
 const getCards = (req, res, next) => Card.find({})
   .then((cards) => {
-    res.status(200).send((cards));
+    res.send((cards));
   })
   .catch(next);
 
@@ -14,7 +14,7 @@ const createCard = (req, res, next) => {
   const { _id: userId } = req.user;
   Card.create({ name, link, owner: userId })
     .then((card) => {
-      res.status(201).send((card));
+      res.send((card));
     })
     .catch((err) => {
       if (err.name === 'BadRequestError') {
@@ -46,7 +46,7 @@ const likeCard = (req, res, next) => {
   )
     .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
-      res.status(200).send((likes));
+      res.send((likes));
     })
     .catch(next);
 };
@@ -59,7 +59,7 @@ const deleteLikeCard = (req, res, next) => {
   )
     .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
-      res.status(200).send((likes));
+      res.send((likes));
     })
     .catch(next);
 };
