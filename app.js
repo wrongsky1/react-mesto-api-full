@@ -1,26 +1,16 @@
-require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { celebrate, Joi, CelebrateError } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const requestLimit = require('express-rate-limit');
 const usersRouters = require('./routes/users.js');
 const cardsRouters = require('./routes/cards.js');
 const { requestLogger, errorLogger } = require('./middlewares/logger.js');
 const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth.js');
-const BadRequestError = require('./errors/BadRequestError');
 const NotFoundError = require('./errors/NotFoundError');
-
-const { PORT = 3000 } = process.env;
-
-const app = express();
-
-const limit = requestLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-});
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -29,10 +19,24 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
-app.use(limit);
+const { PORT = 3000 } = process.env;
+
+const app = express();
+
 app.use(cors());
+
+// eslint-disable-next-line import/no-unresolved
+require('dotenv').config();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const limit = requestLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+
+app.use(limit);
 
 app.use(requestLogger);
 
@@ -68,19 +72,17 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(errorLogger);
+app.use(errors());
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  let error = err;
-  if (error instanceof CelebrateError) error = new BadRequestError();
-  const { statusCode = 500, message } = error;
+  const { statusCode = 500, message } = err;
   res
     .status(statusCode)
     .send({
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message,
+      // eslint-disable-next-line comma-dangle
+      message: statusCode === 500 ? 'На сервере произошла ошибка' : message
     });
-  next();
 });
 
 app.listen(PORT, () => {
