@@ -3,23 +3,29 @@ const BadRequestError = require('../errors/BadRequestError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
 
-const getCards = (req, res, next) => {
-  Card.find({})
-    .then((cards) => res.status(200).send({ data: cards }))
-    .catch(next);
-};
+const getCards = (req, res, next) => Card.find({})
+  .then((cards) => {
+    res.status(200).send((cards));
+  })
+  .catch(next);
 
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const { _id: userId } = req.user;
   Card.create({ name, link, owner: userId })
-    .then((card) => res.status(201).send({ data: card }))
-    .catch(() => next(new BadRequestError()));
+    .then((card) => {
+      res.status(201).send((card));
+    })
+    .catch((err) => {
+      if (err.name === 'BadRequestError') {
+        throw new BadRequestError('Ошибка валидации. Некорректные данные.');
+      }
+      next(err);
+    });
 };
 
 const deleteCard = (req, res, next) => {
-  const { cardId } = req.params;
-  Card.findById(cardId)
+  Card.findById(req.params.cardId)
     .orFail(new NotFoundError('Карточки не существует'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
@@ -40,7 +46,7 @@ const likeCard = (req, res, next) => {
   )
     .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
-      res.status(200).send({ data: likes });
+      res.status(200).send((likes));
     })
     .catch(next);
 };
@@ -53,7 +59,7 @@ const deleteLikeCard = (req, res, next) => {
   )
     .orFail(new NotFoundError('Карточки не существует'))
     .then((likes) => {
-      res.status(200).send({ data: likes });
+      res.status(200).send((likes));
     })
     .catch(next);
 };

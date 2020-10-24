@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
 const { celebrate, Joi, CelebrateError } = require('celebrate');
 const requestLimit = require('express-rate-limit');
@@ -30,8 +31,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(limit);
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(requestLogger);
 
@@ -43,15 +44,18 @@ app.get('/crash-test', () => {
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/),
     email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
-    password: Joi.string().required().min(8).pattern(/^\S+$/),
-  }),
+    password: Joi.string().required().pattern(/^\S+$/),
+  }).unknown(true),
 }), createUser);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
-    password: Joi.string().required().min(8).pattern(/^\S+$/),
+    password: Joi.string().required().pattern(/^\S+$/),
   }),
 }), login);
 

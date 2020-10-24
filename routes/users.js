@@ -11,8 +11,8 @@ const {
 router.get('/users', getUsers);
 
 router.get('/users/:id', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().hex().length(24),
+  body: Joi.object().keys({
+    _id: Joi.string().alphanum().length(24),
   }),
 }), getUserById);
 
@@ -25,7 +25,7 @@ router.patch('/users/me', celebrate({
 
 router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/),
+    avatar: Joi.string().required().pattern(/^((http|https):\/\/)(www\.)?([\w\W\d]{1,})(\.)([a-zA-Z]{1,10})([\w\W\d]{1,})?$/),
   }),
 }), changeUserAvatar);
 

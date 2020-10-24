@@ -9,19 +9,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 2,
     maxlength: 30,
-    default: 'User',
     required: [true, 'имя пользователя, строка от 2 до 30 символов'],
   },
   about: {
     type: String,
     minlength: 2,
     maxlength: 30,
-    default: 'About',
     required: [true, 'информация о пользователе, строка от 2 до 30 символов'],
   },
   avatar: {
     type: String,
-    default: 'https://icon-library.com/images/141782.svg.svg',
     validate: {
       validator(value) {
         return isURL(value);
