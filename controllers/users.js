@@ -31,25 +31,23 @@ const createUser = (req, res, next) => {
   } = req.body;
 
   bcrypt.hash(req.body.password, 10)
-    .then((hash) => User.create({
-      name: name || 'User',
-      about: about || 'About user',
-      avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
-      email,
-      password: hash,
-    }))
-    .catch((err) => {
-      if (err.name === 'BadRequestError') {
-        throw new BadRequestError('Заполните все поля: name, about, avatar, email, password');
-      } else if (err.name === 'MongoError' || err.code === 11000) {
-        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
-      }
-    })
-    .then((user) => {
-      res.status(200).send((user));
-    })
-
-    .catch(next);
+    .then((hash) => {
+      User.create({
+        name: name || 'User',
+        about: about || 'About user',
+        avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
+        email,
+        password: hash,
+      })
+        .then((user) => {
+          res.status(200).send({ message: `Пользователь ${user.email} успешно создан` });
+        })
+        .catch((err) => {
+          if (err.name === 'MongoError' && err.code === 11000) {
+            next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+          } else next(err);
+        });
+    });
 };
 
 const changeUser = (req, res, next) => {
