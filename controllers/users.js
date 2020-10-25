@@ -26,11 +26,14 @@ const getUserById = (req, res, next) => {
 
 const createUser = (req, res, next) => {
   const {
-    // eslint-disable-next-line no-unused-vars
-    name, about, avatar, email, password,
+    name,
+    about,
+    avatar,
+    email,
+    password,
   } = req.body;
 
-  bcrypt.hash(req.body.password, 10)
+  bcrypt.hash(password, 10)
     .then((hash) => {
       User.create({
         name: name || 'User',
