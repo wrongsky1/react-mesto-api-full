@@ -34,25 +34,24 @@ const createUser = (req, res, next) => {
   } = req.body;
 
   bcrypt.hash(password, 10)
-    .then((hash) => {
-      User.create({
-        name: name || 'User',
-        about: about || 'About user',
-        avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
-        email,
-        password: hash,
-      })
-        .then((user) => {
-          const userWithoutPassword = user;
-          userWithoutPassword.password = '';
-          res.status(200).send({ data: userWithoutPassword });
-        })
-        .catch((err) => {
-          if (err.name === 'MongoError' && err.code === 11000) {
-            next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-          } else next(err);
-        });
-    });
+    .then((hash) => User.create({
+      name: name || 'User',
+      about: about || 'About user',
+      avatar: avatar || 'https://icon-library.com/images/141782.svg.svg',
+      email,
+      password: hash,
+    }))
+    .catch((err) => {
+      if (err.name === 'MongoError' && err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+      } else next(err);
+    })
+    .then((user) => {
+      const userWithoutPassword = user;
+      userWithoutPassword.password = '';
+      res.status(200).send({ data: userWithoutPassword });
+    })
+    .catch(next);
 };
 
 const changeUser = (req, res, next) => {
@@ -65,7 +64,7 @@ const changeUser = (req, res, next) => {
       res.status(200).send((user));
     })
     .catch((err) => {
-      if (err.name === 'BadRequestError') {
+      if (err.name === 'ValidationError') {
         throw new BadRequestError('Ошибка валидации');
       }
       next(err);
@@ -82,7 +81,7 @@ const changeUserAvatar = (req, res, next) => {
       res.status(200).send((user));
     })
     .catch((err) => {
-      if (err.name === 'BadRequestError') {
+      if (err.name === 'ValidationError') {
         throw new BadRequestError('Ошибка валидации');
       }
       next(err);
@@ -98,7 +97,7 @@ const login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
-      res.send({ token });
+      res.status(200).send({ token });
     })
     .catch(next);
 };

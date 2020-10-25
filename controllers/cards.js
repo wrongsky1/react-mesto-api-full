@@ -17,7 +17,7 @@ const createCard = (req, res, next) => {
       res.send((card));
     })
     .catch((err) => {
-      if (err.name === 'BadRequestError') {
+      if (err.name === 'ValidationError') {
         throw new BadRequestError('Ошибка валидации. Некорректные данные.');
       }
       next(err);
@@ -29,7 +29,7 @@ const deleteCard = (req, res, next) => {
     .orFail(new NotFoundError('Карточки не существует'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError({ message: 'Удалять можно только свои карточки' });
+        throw new ForbiddenError('Удалять можно только свои карточки');
       }
       Card.findByIdAndDelete(req.params.cardId)
         .then(() => res.status(200).send({ message: 'Карточка удалена' }))
