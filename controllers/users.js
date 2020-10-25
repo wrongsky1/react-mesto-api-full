@@ -40,7 +40,9 @@ const createUser = (req, res, next) => {
         password: hash,
       })
         .then((user) => {
-          res.status(200).send({ message: `Пользователь ${user.email} успешно создан` });
+          const userWithoutPassword = user;
+          userWithoutPassword.password = '';
+          res.status(200).send({ data: userWithoutPassword });
         })
         .catch((err) => {
           if (err.name === 'MongoError' && err.code === 11000) {
