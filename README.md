@@ -1,10 +1,21 @@
-# react-mesto-api-full
-Репозиторий для полноценного API проекта Mesto, включающий авторизацию и регистрацию пользователей, операции с карточками и пользователями.  
+# Проектная работа № 15  
 
+### Информация:
+Репозиторий для полноценного API проекта Mesto, включающий авторизацию и регистрацию пользователей, операции с карточками и пользователями. 
 
-- [frontend](https://github.com/TuretskayaIrina/react-mesto-auth)
-- [REST API](https://api.cat.students.nomoreparties.space/) | 178.154.227.140
+* Доменное имя front-end http://razmd.students.nomoreparties.space
+* Доменное имя back-end http://api.razmd.students.nomoreparties.space
+* IP сервера: 130.193.50.9
 
-**Deploy**
+## Директории
+`/controllers` — контроллеры для обработки маршрутов  
+`/errors` - модели ошибок
+`/middlewares` - папка для контроля приложения
+`/models` - папка с схемами пользователя и карточки   
+`/routes` — папка с файлами роутера
 
-* [Регистрируйтесь, ставьте лайки =)](https://cat.students.nomoreparties.space/)
+## Запуск проекта:
+* npm run start — запускает сервер   
+* npm run dev — запускает сервер с hot-reload
+
+### Технологии использованные в проекте: (HTML, CSS, БЭМ, JS, React JS, Node.js, MongoDB).
