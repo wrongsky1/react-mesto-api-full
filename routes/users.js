@@ -6,7 +6,7 @@ const {
   getUserById,
   changeUser,
   changeUserAvatar,
-} = require('../controllers/users.js');
+} = require('../controllers/users');
 
 router.get('/users', getUsers);
 

@@ -24,7 +24,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(cors());
-
+app.use(require('cors')());
 // eslint-disable-next-line import/no-unresolved
 require('dotenv').config();
 
@@ -46,6 +46,13 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
+    password: Joi.string().required().pattern(/^\S+$/),
+  }),
+}), login);
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -56,20 +63,13 @@ app.post('/signup', celebrate({
   }).unknown(true),
 }), createUser);
 
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().pattern(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/),
-    password: Joi.string().required().pattern(/^\S+$/),
-  }),
-}), login);
-
 app.all('*', (req, res, next) => {
   next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
 app.use(auth);
-app.use('/', usersRouters);
 app.use('/', cardsRouters);
+app.use('/', usersRouters);
 
 app.use(errorLogger);
 app.use(errors());
@@ -86,5 +86,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Ссылка на сервер ${PORT}`);
 });

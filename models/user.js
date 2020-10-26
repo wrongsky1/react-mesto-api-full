@@ -42,6 +42,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     select: false,
+    validate: {
+      validator(v) {
+        return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).*$/.test(v);
+      },
+      message: 'Вы ввели некорректный пароль',
+    },
   },
 });
 

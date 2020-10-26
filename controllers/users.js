@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const BadRequestError = require('../errors/BadRequestError');
+const ValidationError = require('../errors/ValidationError');
 const ConflictError = require('../errors/ConflictError');
 const NotFoundError = require('../errors/NotFoundError');
 
@@ -32,7 +32,6 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name: name || 'User',
@@ -42,9 +41,11 @@ const createUser = (req, res, next) => {
       password: hash,
     }))
     .catch((err) => {
-      if (err.name === 'MongoError' && err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
-      } else next(err);
+      if (err.name === 'ValidationError') {
+        throw new ValidationError('Заполните все поля: name, about, avatar, email, password');
+      } else if (err.name === 'MongoError' || err.code === 11000) {
+        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
+      }
     })
     .then((user) => {
       const userWithoutPassword = user;
@@ -65,7 +66,7 @@ const changeUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Ошибка валидации');
+        throw new ValidationError('Ошибка валидации');
       }
       next(err);
     });
@@ -82,7 +83,7 @@ const changeUserAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Ошибка валидации');
+        throw new ValidationError('Ошибка валидации');
       }
       next(err);
     });

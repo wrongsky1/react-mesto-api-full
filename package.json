@@ -2,7 +2,7 @@
   "name": "react-mesto-api-full",
   "version": "1.0.0",
   "description": "REST API for Mesto",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
