@@ -1,7 +1,7 @@
 const Card = require('../models/card');
-const BadRequestError = require('../errors/ValidationError');
-const ForbiddenError = require('../errors/ForbiddenError');
+const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const getCards = (req, res, next) => Card.find({})
   .then((cards) => {
@@ -18,7 +18,7 @@ const createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Ошибка валидации. Некорректные данные.');
+        throw new ValidationError('Ошибка валидации. Некорректные данные.');
       }
       next(err);
     });
@@ -27,26 +27,28 @@ const createCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .orFail(new NotFoundError('Карточки не существует'))
+
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Удалять можно только свои карточки');
       }
-      Card.findByIdAndDelete(req.params.cardId)
-        .then(() => res.status(200).send({ message: 'Карточка удалена' }))
-        .catch(next);
+
+      card.remove()
+        .then(() => res.status(200).send({ message: 'Карточка удалена' }));
     })
+
     .catch(next);
 };
 
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
     .orFail(new NotFoundError('Карточки не существует'))
-    .then((likes) => {
-      res.send((likes));
+    .then((data) => {
+      res.send((data));
     })
     .catch(next);
 };
@@ -54,12 +56,12 @@ const likeCard = (req, res, next) => {
 const deleteLikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
     .orFail(new NotFoundError('Карточки не существует'))
-    .then((likes) => {
-      res.send((likes));
+    .then((data) => {
+      res.send((data));
     })
     .catch(next);
 };

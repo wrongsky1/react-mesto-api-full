@@ -2,8 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
-const ConflictError = require('../errors/ConflictError');
 const NotFoundError = require('../errors/NotFoundError');
+const ConflictError = require('../errors/ConflictError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -17,13 +17,16 @@ const getUsers = (req, res, next) => {
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.id === 'me' ? req.user : req.params.id)
-    .orFail(new NotFoundError({ message: 'Пользователя не существует' }))
     .then((user) => {
-      res.status(200).send({ data: user });
+      if (user === null || undefined) {
+        throw new NotFoundError('Нет пользователя с таким id');
+      }
+      return res.status(200).send({ data: user });
     })
     .catch(next);
 };
 
+// создать пользователя
 const createUser = (req, res, next) => {
   const {
     name,
@@ -33,6 +36,7 @@ const createUser = (req, res, next) => {
     password,
   } = req.body;
   bcrypt.hash(password, 10)
+
     .then((hash) => User.create({
       name: name || 'User',
       about: about || 'About user',
@@ -40,6 +44,7 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
+
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new ValidationError('Заполните все поля: name, about, avatar, email, password');
@@ -47,10 +52,29 @@ const createUser = (req, res, next) => {
         throw new ConflictError('Пользователь с таким email уже зарегистрирован');
       }
     })
+
     .then((user) => {
-      const userWithoutPassword = user;
-      userWithoutPassword.password = '';
-      res.status(200).send({ data: userWithoutPassword });
+      const newUser = user;
+      newUser.password = '';
+      res.status(200).send((newUser));
+    })
+
+    .catch(next);
+};
+
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // создадим токен
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+      // вернём токен
+      res.status(200).send({ token });
     })
     .catch(next);
 };
@@ -87,20 +111,6 @@ const changeUserAvatar = (req, res, next) => {
       }
       next(err);
     });
-};
-
-const login = (req, res, next) => {
-  const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-        { expiresIn: '7d' },
-      );
-      res.status(200).send({ token });
-    })
-    .catch(next);
 };
 
 module.exports = {
