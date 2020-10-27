@@ -8,8 +8,8 @@ const { changeUserAvatar } = require('../controllers/users');
 router.get('/users', getUsers);
 
 router.get('/users/:id', celebrate({
-  body: Joi.object().keys({
-    _id: Joi.string().hex().length(24),
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24),
   }),
 }), getUserById);
 
