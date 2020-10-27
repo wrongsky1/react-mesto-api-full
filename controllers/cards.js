@@ -26,7 +26,7 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(new NotFoundError('Карточки не существует'))
+    .orFail(new NotFoundError(`Карточка с id ${req.params.cardId} не существует`))
 
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {

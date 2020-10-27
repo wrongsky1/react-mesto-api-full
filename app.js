@@ -17,7 +17,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3006 } = process.env;
 
 const app = express();
 app.use(require('cors')());
@@ -52,9 +52,8 @@ app.post('/signup', celebrate({
   }).unknown(true),
 }), createUser);
 
-app.use(auth);
-app.use('/', getCards);
-app.use('/', getUsers);
+app.use('/', auth, getCards);
+app.use('/', auth, getUsers);
 
 app.use(errorLogger);
 app.use(errors());
